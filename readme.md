@@ -34,7 +34,7 @@ top_node = c.build_tree
 print top_node.tree_as_string
 top_node.traverse([:sunny,    85, 85, false, false])  # => false
 
-```ruby
+```
 
 There are two test suites that come with this , classifier_tests.rb and node_tests.rb
 
