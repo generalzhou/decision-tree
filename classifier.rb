@@ -3,7 +3,7 @@ require File.expand_path('../data', __FILE__)
 
 class Classifier
 	
-	attr_accessor :data
+	attr_reader :data
 
 	def initialize(data)
 		@data = data
@@ -11,33 +11,36 @@ class Classifier
 
 	# recursively builds nodes with the optimal dividing params and returns the top node
 	def build_tree(data_set=data)
-		current_entropy = entropy(data_set)
-		node_params = get_optimal_params(data_set, current_entropy)
-		create_node(node_params, data_set)
+		node_params = get_optimal_params(data_set, entropy(data_set))
+		
+		if node_params[:best_gain] > 0
+			create_branch_node(node_params)
+		else
+			create_leaf_node(data_set)
+		end
+
 	end
 
 	private
 
-		def create_node(node_params, data_set)
-			if node_params[:best_gain] > 0
-				true_branch = build_tree(node_params[:true_set])
-				false_branch = build_tree(node_params[:false_set])
-				Node.new(node_params.merge({true_node: true_branch, 
-									false_node: false_branch}))
-			else
-				Node.new({results: count_results(data_set)})
-			end
+		def create_branch_node(node_params)
+			true_branch = build_tree(node_params[:true_set])
+			false_branch = build_tree(node_params[:false_set])
+			node_params.merge!({true_node: true_branch, false_node: false_branch})
+			Node.new(node_params)
+		end
+
+		def create_leaf_node(data_set)
+			Node.new({results: count_results(data_set)})
 		end
 
 		# scans the current data set for the attribute (column) and dividing value that
 		# best divides the results, according to the information gain property
 		def get_optimal_params(data_set, current_entropy)
 			optimal_params = {best_gain: 0.0}
-			num_attributes = data_set[0].size - 1 #last column is the result	
 
-			(0..(num_attributes - 1)).each do |column_index|
-			
-				attribute_values(column_index).each do |divider_value|
+			for_each_attribute(data_set) do |column_index|
+				attribute_value_range(column_index).each do |divider_value|
 			
 					true_set, false_set = divide_set(column_index, divider_value, data_set)
 					gain = information_gain(true_set, false_set, current_entropy)
@@ -56,7 +59,14 @@ class Classifier
 			optimal_params
 		end
 
-		def attribute_values(column_number)
+		def for_each_attribute(data_set)
+			num_attributes = data_set[0].size - 1 #last column is the result	
+			(0..(num_attributes - 1)).each do |column_index|
+				yield column_index
+			end
+		end
+
+		def attribute_value_range(column_number)
 			data.map { |row| row[column_number] }
 		end
 

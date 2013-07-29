@@ -13,21 +13,17 @@ class Node
 	end
 	
 	def tree_as_string(indent = '')
-		output = ''
-
 		if results.nil?
-
-			output << "#{column} : #{dividing_value}?"
-
-			output << "\n#{indent} T-> "
-			output << true_node.tree_as_string(indent + '  ')
-
-			output << "\n#{indent} F-> "
-			output << false_node.tree_as_string(indent + '  ')
+			"#{column} : #{dividing_value}?" +
+			
+			"\n#{indent} T-> " +
+			true_node.tree_as_string(indent + '  ') +
+			
+			"\n#{indent} F-> " +
+			false_node.tree_as_string(indent + '  ')
 		else
-			output << "#{results.keys.first}"
+			"#{results.keys.first}"
 		end
-		output
 	end
 	
 	def traverse(choices)
